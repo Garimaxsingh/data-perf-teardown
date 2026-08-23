@@ -1,0 +1,31 @@
+# Secrets and credentials
+.env
+.env.*
+*.pem
+.aws/
+credentials
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Data — re-downloadable from public TLC URLs, never commit it
+data/
+*.parquet
+*.csv
+!results/raw_measurements.csv
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
