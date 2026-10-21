@@ -20,6 +20,12 @@ invocation; first run of each is the cold-cache run.
 **Task count: 63x more** (1,323 vs 21). **Runtime: ~184x slower**
 (167.45s vs 0.91s) for the identical row count.
 
+**Storage: ~25% larger** for the same rows and codec — 3,213,516,163
+bytes (small files) vs 2,562,217,347 bytes (compacted), measured with
+`aws s3 ls --summarize`. Every file repeats its own footer/schema, and
+~4,100-row row groups give ZSTD and dictionary encoding far less data to
+compress per chunk.
+
 Note Spark's own read coalescing: 40,983 files did not become 40,983
 tasks — Spark's Parquet reader packs multiple small files into each
 partition up to `spark.sql.files.maxPartitionBytes` (default 128MB), so
