@@ -25,10 +25,15 @@ Sibling project's spend so far: ~$5.3-5.6 (see `retail-lakehouse-aws/docs/COST.m
 | 2026-10-21 | E6 Glue build job (G.1X x4, 588s, 2,354 DPU-s) | ~$0.29 | Wrote iceberg_unsorted, iceberg_sorted, parquet_sorted (64 files each) + Iceberg planFiles counts |
 | 2026-10-21 | E6 Athena queries (4 tables x 3 runs) | ~$0.010 | ~2.0GB billed total; sorted variants billed at the 10MB/query minimum |
 | 2026-10-21 | E6 `EXPLAIN ANALYZE` + answer-check queries (8 Athena queries) | ~$0.007 | Diagnosed why plain sorted Parquet scanned less than sorted Iceberg (page indexes) |
+| 2026-10-21 | E4 EC2 t3.micro session (Postgres, unlimited CPU credits), 30GB gp3, ~26 min (07:15:49-07:42:10 UTC) | ~$0.05 (upper bound) | On-demand ~$0.0112/hr x 0.44hr = ~$0.005; CPU surplus bounded by 2 vCPU fully busy: (2 - 0.2 baseline) x 0.44hr x $0.05 = ~$0.04; gp3 30GB for 0.44hr = ~$0.002. Same-session teardown via Terraform; instance + volume confirmed gone. SSM Run Command: no charge |
 | ongoing | S3 storage for E6's three new layouts (~10.2GB) | ~$0.25/month | iceberg_unsorted 3.55GB + iceberg_sorted 2.75GB + parquet_sorted 3.91GB; delete after write-ups are final |
 
-**Running total, this project: ~$0.92** as of 2026-10-21 (~$0.45 on
-2026-08-27 + ~$0.47 on 2026-10-21), excluding S3 storage accrual.
+**Running total, this project: ~$0.97** as of 2026-10-21 (~$0.45 on
+2026-08-27 + ~$0.52 on 2026-10-21), excluding S3 storage accrual.
+
+Cross-check: on 2026-10-21 AWS's own `aws freetier get-account-plan-state`
+reported **$106.85** Free Plan credits remaining for the shared account
+(both projects), plan ACTIVE, expiring 2027-02-23.
 
 
 **Anticipated cost drivers, in order of risk** (per `PROJECT_BRIEF.md` §5

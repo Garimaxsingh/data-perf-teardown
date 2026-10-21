@@ -1,0 +1,18 @@
+2026-10-21T07:16:56Z bootstrap done; 2 vCPU, 913 MB RAM
+2026-10-21T07:16:57Z downloading 2024 partitions of optimized/parquet-partitioned/
+2026-10-21T07:17:07Z downloaded 372 files, 618M
+2026-10-21T07:17:08Z converting to CSV with DuckDB (arrival order = partition/day order)
+2026-10-21T07:18:52Z CSV ready: 4.1G
+2026-10-21T07:18:53Z COPY into trips_unsorted
+2026-10-21T07:21:32Z loaded in 158s
+2026-10-21T07:21:32Z building trips_sorted (CREATE TABLE AS ... ORDER BY pulocationid)
+2026-10-21T07:29:11Z sorted copy built in 458s
+2026-10-21T07:34:32Z BRIN indexes + VACUUM ANALYZE in 320s
+2026-10-21T07:36:30Z sizes: rows_unsorted,41169691 rows_sorted,41169691 heap_bytes_unsorted,7673266176 heap_bytes_sorted,7685537792 heap_blocks_unsorted,936678 heap_blocks_sorted,938176 brin_bytes_unsorted,270336 brin_bytes_sorted,270336 sort_build_seconds,458 
+2026-10-21T07:37:34Z measured trips_unsorted run 1: {"table": "trips_unsorted", "run": 1, "execution_ms": 57592.598, "shared_hit_blocks": 61, "shared_read_blocks": 936679, "io_read_ms": 166011.994, "nodes": ["Limit", "Sort", "Aggregate", "Gather Merge"
+2026-10-21T07:38:32Z measured trips_unsorted run 2: {"table": "trips_unsorted", "run": 2, "execution_ms": 57524.617, "shared_hit_blocks": 158, "shared_read_blocks": 936582, "io_read_ms": 165620.579, "nodes": ["Limit", "Sort", "Aggregate", "Gather Merge
+2026-10-21T07:39:31Z measured trips_unsorted run 3: {"table": "trips_unsorted", "run": 3, "execution_ms": 57645.874, "shared_hit_blocks": 254, "shared_read_blocks": 936486, "io_read_ms": 165902.971, "nodes": ["Limit", "Sort", "Aggregate", "Gather Merge
+2026-10-21T07:39:52Z measured trips_sorted run 1: {"table": "trips_sorted", "run": 1, "execution_ms": 14149.024, "shared_hit_blocks": 79, "shared_read_blocks": 46370, "io_read_ms": 40242.804, "nodes": ["Limit", "Sort", "Aggregate", "Gather Merge", "S
+2026-10-21T07:39:54Z measured trips_sorted run 2: {"table": "trips_sorted", "run": 2, "execution_ms": 1254.999, "shared_hit_blocks": 80, "shared_read_blocks": 46369, "io_read_ms": 385.025, "nodes": ["Limit", "Sort", "Aggregate", "Gather Merge", "Sort
+2026-10-21T07:39:56Z measured trips_sorted run 3: {"table": "trips_sorted", "run": 3, "execution_ms": 1247.056, "shared_hit_blocks": 80, "shared_read_blocks": 46369, "io_read_ms": 327.311, "nodes": ["Limit", "Sort", "Aggregate", "Gather Merge", "Sort
+2026-10-21T07:40:57Z E4 DONE

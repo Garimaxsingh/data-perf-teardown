@@ -24,6 +24,7 @@ data/
 *.parquet
 *.csv
 !results/raw_measurements.csv
+!results/e4/*.csv
 
 # OS / editor
 .DS_Store

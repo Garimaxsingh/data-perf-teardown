@@ -1,0 +1,9 @@
+rows_unsorted,41169691
+rows_sorted,41169691
+heap_bytes_unsorted,7673266176
+heap_bytes_sorted,7685537792
+heap_blocks_unsorted,936678
+heap_blocks_sorted,938176
+brin_bytes_unsorted,270336
+brin_bytes_sorted,270336
+sort_build_seconds,458
