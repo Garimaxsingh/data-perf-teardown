@@ -115,6 +115,56 @@ answer the same question for free. Row count for `csv_flat` was instead
 validated locally via DuckDB directly against the source CSV files
 (167,858,646 — matches all three other variants exactly), at zero AWS cost.
 
+## Incident 4: AQE silently replaced the "forced" sort-merge join (2026-10-21)
+
+**What happened**: E5's first Glue run disabled broadcast joins at both
+the static planner and AQE (`spark.sql.autoBroadcastJoinThreshold=-1`,
+`spark.sql.adaptive.autoBroadcastJoinThreshold=-1`) to force a
+sort-merge join. The job's printed physical plan showed the *initial*
+plan as `SortMergeJoin`, but the *final* (post-AQE) plan as
+`ShuffledHashJoin` — AQE re-planned the join at runtime from real shuffle
+statistics. Still a full 1.27 GB shuffle of the fact side, but not the
+strategy the experiment claimed to measure.
+
+**Why it's treated as real**: the plan text is printed by the job itself
+after execution (`executedPlan` with `isFinalPlan=true`), so this is what
+actually ran, not a planning artifact.
+
+**Decision**: kept the unhinted run's numbers (relabelled in the README as
+what they are — a shuffled hash join) and added a third variant,
+`sort_merge_hinted`, using an explicit `MERGE` join hint, which pinned a
+real `SortMergeJoin` (verified in its final plan). Run as a second Glue
+job invocation with identical config.
+
+**What this changes**: E5 now reports three strategies instead of two.
+The extra variant ran ~1 hour after the other two, not strictly back to
+back — stated in `experiments/e5_join_strategy/README.md`. Cost: one extra
+~$0.08 Glue run.
+
+**Lesson**: on Spark 3.2+ with AQE on, "I disabled broadcast" does not
+mean "I got sort-merge". Always read the *final* plan, not the initial one.
+
+## Incident 5: E6's Iceberg table scanned more than plain Parquet (2026-10-21)
+
+**What happened**: the expected E6 headline was "Iceberg stats beat plain
+Parquet". With the same sort and the same 64 files, `parquet_sorted`
+scanned 0.13 MB while `iceberg_sorted` scanned 4.11 MB.
+
+**Investigation**: `EXPLAIN ANALYZE` showed Athena reading 40,000 rows
+from `parquet_sorted` vs the full 2,669,736-row row group from
+`iceberg_sorted`. Downloading the matching file from each layout and
+reading its footer with pyarrow showed both have one row group and both
+carry Parquet column/offset indexes; the Iceberg scan's 4,105,631 bytes
+equals exactly that file's `fare_amount` + `pulocationid` column chunks.
+So Athena's Hive-table reader used page-level indexes and its Iceberg
+reader read whole column chunks.
+
+**Decision**: reported as measured, not tuned away. The E6 write-up now
+credits the sort for the pruning, credits Iceberg specifically for
+planning-time file elimination (1 of 64 files, from manifests), and
+notes that both sorted layouts bill identically under Athena's 10 MB
+per-query minimum.
+
 ## Incident log format
 
 Future entries should follow the same shape: what happened, the exact

@@ -16,12 +16,20 @@ Sibling project's spend so far: ~$5.3-5.6 (see `retail-lakehouse-aws/docs/COST.m
 | 2026-08-27 | Glue crawler runs (2x — first run mis-targeted the partitioned-table prefix, corrected and rerun) | ~$0.02 | First run's mistake cost real (tiny) money — see docs/RUNBOOK.md incident 2 |
 | 2026-08-27 | Athena validation queries (parquet_flat, parquet_partitioned, parquet_smallfiles count(*)) | $0 | All three scanned 0 bytes per Athena's stats (metadata-only count optimization) |
 | 2026-08-27 | Athena validation query on csv_flat count(*) — **FAILED**, hit the 10GB/query workgroup cap | $0 | Query never executed past the cap check, so no scan cost incurred — but this is the real, unprompted E3 preview: CSV has no metadata-only count shortcut and forces a real full-table scan just to count rows. Validated row count locally via DuckDB instead (167,858,646, matches all other variants). |
-
 | 2026-08-27 | E2 Athena queries (flat vs partitioned, 3 runs each) | ~$0.0002 | flat scan 12.9MB/query, partitioned scan 140KB/query — real ~91.8x reduction |
 | 2026-08-27 | E3 Athena queries — cap raised to 20GB, CSV 3-col scan (3 runs) + Parquet 3-col scan (3 runs), cap reverted to 10GB | ~$0.27 | CSV: 17.82GB/query (full scan regardless of columns); Parquet: 0.44GB/query — real ~40.2x reduction. Cap raise/revert both applied via Terraform, documented not silent. |
 | 2026-08-27 | E1 Glue job (`data-perf-teardown-e1-small-files`, G.1X x2 workers, 672s) | ~$0.16 | 3 runs each on smallfiles (40,983 files) vs compacted (21 files) variants — real 1,323 vs 21 Spark tasks, ~167s vs ~0.9s runtime (~184x) for the identical 167.8M rows |
+| 2026-10-21 | E2 `EXPLAIN ANALYZE` diagnostics (4 Athena queries) | ~$0.0002 | Confirmed the flat baseline was pruned by row-group stats, not fully scanned — see `experiments/e2_partition_pruning/README.md` |
+| 2026-10-21 | E5 Glue job run 1 (`sort_merge` + `broadcast`, G.1X x2, 317s, 635 DPU-s) | ~$0.08 | $0.44/DPU-hr. Revealed AQE had swapped the forced sort-merge join for a shuffled hash join |
+| 2026-10-21 | E5 Glue job run 2 (`sort_merge_hinted`, G.1X x2, 323s, 647 DPU-s) | ~$0.08 | Re-run to get a true SortMergeJoin via MERGE hint — a direct cost of the AQE surprise above |
+| 2026-10-21 | E6 Glue build job (G.1X x4, 588s, 2,354 DPU-s) | ~$0.29 | Wrote iceberg_unsorted, iceberg_sorted, parquet_sorted (64 files each) + Iceberg planFiles counts |
+| 2026-10-21 | E6 Athena queries (4 tables x 3 runs) | ~$0.010 | ~2.0GB billed total; sorted variants billed at the 10MB/query minimum |
+| 2026-10-21 | E6 `EXPLAIN ANALYZE` + answer-check queries (8 Athena queries) | ~$0.007 | Diagnosed why plain sorted Parquet scanned less than sorted Iceberg (page indexes) |
+| ongoing | S3 storage for E6's three new layouts (~10.2GB) | ~$0.25/month | iceberg_unsorted 3.55GB + iceberg_sorted 2.75GB + parquet_sorted 3.91GB; delete after write-ups are final |
 
-**Running total, this project: ~$0.45** as of 2026-08-27.
+**Running total, this project: ~$0.92** as of 2026-10-21 (~$0.45 on
+2026-08-27 + ~$0.47 on 2026-10-21), excluding S3 storage accrual.
+
 
 **Anticipated cost drivers, in order of risk** (per `PROJECT_BRIEF.md` §5
 budget-discipline rule — estimate bytes before running, especially E3's
