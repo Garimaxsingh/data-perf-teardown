@@ -1,0 +1,4 @@
+pandas
+pyarrow
+boto3
+requests
